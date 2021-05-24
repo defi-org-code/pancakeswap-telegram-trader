@@ -15,7 +15,7 @@ const yourPrivateKey = require('./private-key').key;
 //---
 
 //--- Change every pump and dump
-const shitTokenAddress = '0x3f8470484286715537af24eb5362aeeefd58606f';
+const shitTokenAddress = '0x8F0528cE5eF7B51152A59745bEfDD91D97091d2F';
 const bnbAmountToBuy = "0.001";
 //---
 
@@ -39,7 +39,7 @@ const swapBNBToShitToken = async () => {
 
     const tx = signTransaction(yourAddress, pancakeSwapAddress, Web3.utils.toWei(bnbAmountToBuy, "ether"), data);
 
-    await signAndTransmitTransaction(tx);
+    await signAndTransmitTransaction(tx, 'swapBNBToShitToken');
 
 };
 
@@ -62,7 +62,7 @@ const swapShitTokenToBNB = async (withFee) => {
 
     const tx = signTransaction(yourAddress, pancakeSwapAddress, 0, data);
 
-    await signAndTransmitTransaction(tx);
+    await signAndTransmitTransaction(tx, 'swapShitTokenToBNB');
 
 };
 
@@ -75,10 +75,10 @@ const approveShitToken = async () => {
 
     const tx = signTransaction(yourAddress, shitTokenAddress, 0, data);
 
-    await signAndTransmitTransaction(tx);
+    await signAndTransmitTransaction(tx, 'approveShitToken');
 };
 
-const signAndTransmitTransaction = async (tx) => {
+const signAndTransmitTransaction = async (tx, name) => {
 
     const signedTransaction = await web3.eth.accounts.signTransaction(
         tx,
@@ -88,7 +88,7 @@ const signAndTransmitTransaction = async (tx) => {
     await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction).on('transactionHash', function (hash) {
         console.log("transactionHash", hash);
     }).on('receipt', function (receipt) {
-        console.log("receipt - approveShitToken");
+        console.log("receipt - ", name);
     }).on('error', console.error); // If a out of gas error, the second parameter is the receipt.;;
 
 };
@@ -115,7 +115,7 @@ const signTransaction = (from, to, value, data) => {
     //await swapBNBToShitToken();
 
     // 2
-    // await approveShitToken();
-    // await swapShitTokenToBNB(true);
+    //await approveShitToken();
+    //await swapShitTokenToBNB(true);
 
 })();
