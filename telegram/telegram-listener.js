@@ -100,6 +100,17 @@ const findUserByMessage = async (messageToFind, chat, limit = 10) => {
     return null;
 };
 
+/**
+ * Telegram listener
+ *
+ * @param chatName - the group or channel you want to listen to (you have to be a member of that chat)
+ * @param partOfMessageToFindUser - Part or all of a message to use in order to listen to a specific user
+ * @param limitOfMessages - How many messages to fetch when looking for user's messages
+ * @param callback - The callback with the message that the user sent
+ *
+ * Please notice that in channels the user who send the messages is the channel itself and not a specific user
+ * @returns {Promise<void>}
+ */
 module.exports = async (chatName, partOfMessageToFindUser, limitOfMessages, callback) => {
 
     await startListening();

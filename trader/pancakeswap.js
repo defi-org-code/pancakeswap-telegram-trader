@@ -3,7 +3,7 @@ const provider = new Web3.providers.HttpProvider("https://bsc-dataseed.binance.o
 const Contract = require('web3-eth-contract');
 Contract.setProvider(provider);
 const web3 = new Web3(provider);
-const secret = require('./secret');
+const secret = require('../secret');
 
 //--- Change if needed
 const gas = 2000000;
@@ -15,50 +15,52 @@ const pancakeSwapAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
 const wBNB = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
 const pancakeswapRouterContract = new Contract(require('./pancakeswap-router-abi'), pancakeSwapAddress);
 
-export const swapBNBToShitToken = async (shitTokenAddress, bnbAmountToBuy) => {
+module.exports = {
+    swapBNBToShitToken: async (shitTokenAddress, bnbAmountToBuy) => {
 
-    const data = pancakeswapRouterContract.methods.swapExactETHForTokens(
-        1, // Min amount. 1 means 100% slippage
-        [
-            wBNB,
-            shitTokenAddress // The address of the shitoken
-        ],
-        secret.public_key, // Your address
-        new Date().getTime() + (60 * 1000) // 1 hour from now
-    ).encodeABI();
+        const data = pancakeswapRouterContract.methods.swapExactETHForTokens(
+            1, // Min amount. 1 means 100% slippage
+            [
+                wBNB,
+                shitTokenAddress // The address of the shitoken
+            ],
+            secret.public_key, // Your address
+            new Date().getTime() + (60 * 1000) // 1 hour from now
+        ).encodeABI();
 
-    const tx = signTransaction(secret.public_key, pancakeSwapAddress, Web3.utils.toWei(bnbAmountToBuy, "ether"), data);
+        const tx = signTransaction(secret.public_key, pancakeSwapAddress, Web3.utils.toWei(bnbAmountToBuy, "ether"), data);
 
-    await signAndTransmitTransaction(tx, 'swapBNBToShitToken');
+        await signAndTransmitTransaction(tx, 'swapBNBToShitToken');
 
+    },
+    swapShitTokenToBNB: async (withFee, shitTokenAddress) => {
+
+        await approveShitToken(shitTokenAddress);
+
+        const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
+
+        const amountOfShitToken = await shitTokenContract.methods.balanceOf(secret.public_key).call();
+
+        console.log("blanace of", amountOfShitToken);
+
+        const data = pancakeswapRouterContract.methods[withFee ? 'swapExactTokensForETHSupportingFeeOnTransferTokens' : 'swapExactTokensForETH'](
+            amountOfShitToken,
+            1, // Min amount. 1 means 100% slippage
+            [
+                shitTokenAddress,
+                wBNB, // WBNB
+            ],
+            secret.public_key, // Your address
+            new Date().getTime() + (60 * 1000) // 1 hour from now
+        ).encodeABI();
+
+        const tx = signTransaction(secret.public_key, pancakeSwapAddress, 0, data);
+
+        await signAndTransmitTransaction(tx, 'swapShitTokenToBNB');
+
+    }
 };
 
-export const swapShitTokenToBNB = async (withFee, shitTokenAddress) => {
-
-    await approveShitToken(shitTokenAddress);
-
-    const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
-
-    const amountOfShitToken = await shitTokenContract.methods.balanceOf(secret.public_key).call();
-
-    console.log("blanace of", amountOfShitToken);
-
-    const data = pancakeswapRouterContract.methods[withFee ? 'swapExactTokensForETHSupportingFeeOnTransferTokens' : 'swapExactTokensForETH'](
-        amountOfShitToken,
-        1, // Min amount. 1 means 100% slippage
-        [
-            shitTokenAddress,
-            wBNB, // WBNB
-        ],
-        secret.public_key, // Your address
-        new Date().getTime() + (60 * 1000) // 1 hour from now
-    ).encodeABI();
-
-    const tx = signTransaction(secret.public_key, pancakeSwapAddress, 0, data);
-
-    await signAndTransmitTransaction(tx, 'swapShitTokenToBNB');
-
-};
 
 const approveShitToken = async (shitTokenAddress) => {
 
