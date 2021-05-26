@@ -108,8 +108,8 @@ const signTransaction = (from, to, value, data) => {
 (async () => {
 
     await telegramListener(
-        'Testing pump',
-        'שניה',
+        'Pancakeswap Pumping ©',
+        '6 HOURS REMAINING',
         30,
         async (message) => {
 
