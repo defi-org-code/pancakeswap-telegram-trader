@@ -1,31 +1,23 @@
 const Web3 = require("web3");
 const provider = new Web3.providers.HttpProvider("https://bsc-dataseed.binance.org/");
 const Contract = require('web3-eth-contract');
+const telegramListener = require('./telegram/telegram-listener');
 Contract.setProvider(provider);
 const web3 = new Web3(provider);
+const secret = require('./secret');
+const { sleep } = require('@mtproto/core/src/utils/common');
 
 //--- Change if needed
-const gas = 1000000;
-const gasPrice = Web3.utils.toWei("7", "shannon")
-//---
-
-//--- Change once
-const yourAddress = '0xCADfB37bDADb4a5D486cfb1CaCbAA76E54e1F2c5';
-const yourPrivateKey = require('./private-key').key;
-//---
-
-//--- Change every pump and dump
-const shitTokenAddress = '0x8F0528cE5eF7B51152A59745bEfDD91D97091d2F';
-const bnbAmountToBuy = "0.001";
+const gas = 2000000;
+const gasPrice = Web3.utils.toWei("10", "shannon")
 //---
 
 const max = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 const pancakeSwapAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
 const wBNB = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
-const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
 const pancakeswapRouterContract = new Contract(require('./pancakeswap-router-abi'), pancakeSwapAddress);
 
-const swapBNBToShitToken = async () => {
+const swapBNBToShitToken = async (shitTokenAddress, bnbAmountToBuy) => {
 
     const data = pancakeswapRouterContract.methods.swapExactETHForTokens(
         1, // Min amount. 1 means 100% slippage
@@ -33,19 +25,21 @@ const swapBNBToShitToken = async () => {
             wBNB,
             shitTokenAddress // The address of the shitoken
         ],
-        yourAddress, // Your address
+        secret.public_key, // Your address
         new Date().getTime() + (60 * 1000) // 1 hour from now
     ).encodeABI();
 
-    const tx = signTransaction(yourAddress, pancakeSwapAddress, Web3.utils.toWei(bnbAmountToBuy, "ether"), data);
+    const tx = signTransaction(secret.public_key, pancakeSwapAddress, Web3.utils.toWei(bnbAmountToBuy, "ether"), data);
 
     await signAndTransmitTransaction(tx, 'swapBNBToShitToken');
 
 };
 
-const swapShitTokenToBNB = async (withFee) => {
+const swapShitTokenToBNB = async (withFee, shitTokenAddress) => {
 
-    const amountOfShitToken = await shitTokenContract.methods.balanceOf(yourAddress).call();
+    const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
+
+    const amountOfShitToken = await shitTokenContract.methods.balanceOf(secret.public_key).call();
 
     console.log("blanace of", amountOfShitToken);
 
@@ -56,24 +50,26 @@ const swapShitTokenToBNB = async (withFee) => {
             shitTokenAddress,
             wBNB, // WBNB
         ],
-        yourAddress, // Your address
+        secret.public_key, // Your address
         new Date().getTime() + (60 * 1000) // 1 hour from now
     ).encodeABI();
 
-    const tx = signTransaction(yourAddress, pancakeSwapAddress, 0, data);
+    const tx = signTransaction(secret.public_key, pancakeSwapAddress, 0, data);
 
     await signAndTransmitTransaction(tx, 'swapShitTokenToBNB');
 
 };
 
-const approveShitToken = async () => {
+const approveShitToken = async (shitTokenAddress) => {
+
+    const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
 
     const data = shitTokenContract.methods.approve(
         pancakeSwapAddress,
         max // Infinite
     ).encodeABI();
 
-    const tx = signTransaction(yourAddress, shitTokenAddress, 0, data);
+    const tx = signTransaction(secret.public_key, shitTokenAddress, 0, data);
 
     await signAndTransmitTransaction(tx, 'approveShitToken');
 };
@@ -82,7 +78,7 @@ const signAndTransmitTransaction = async (tx, name) => {
 
     const signedTransaction = await web3.eth.accounts.signTransaction(
         tx,
-        yourPrivateKey
+        secret.private_key
     );
 
     await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction).on('transactionHash', function (hash) {
@@ -111,11 +107,30 @@ const signTransaction = (from, to, value, data) => {
 
 (async () => {
 
-    // 1
-    //await swapBNBToShitToken();
+    await telegramListener(
+        'Testing pump',
+        'שניה',
+        30,
+        async (message) => {
 
-    // 2
-    //await approveShitToken();
-    //await swapShitTokenToBNB(true);
+            const regex = /outputCurrency=(.*)\s/i;
+
+            if (regex.test(message)) {
+                const shitTokenAddress = message.match(regex)[1].trim();
+
+                console.log("Found shittoken", shitTokenAddress);
+                await swapBNBToShitToken(shitTokenAddress, "0.001");
+
+                console.log("Waiting 10 seconds");
+                await sleep(10 * 1000);
+
+                console.log("Approving shittoken");
+                await approveShitToken(shitTokenAddress);
+                console.log("Selling shittoken");
+                await swapShitTokenToBNB(true, shitTokenAddress);
+            }
+
+        }
+    );
 
 })();
