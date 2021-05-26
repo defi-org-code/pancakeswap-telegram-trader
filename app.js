@@ -29,7 +29,7 @@ const { sleep } = require('@mtproto/core/src/utils/common');
                 await swapShitTokenToBNB(true, shitTokenAddress);
 
             } else {
-                console.log('Skipping message: ${message}');
+                console.log(`Skipping message: ${message}`);
             }
 
         }
