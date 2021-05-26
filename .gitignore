@@ -4,7 +4,7 @@ cache/
 typechain/
 typechain-abi/
 typechain-hardhat/
-secret.json
+secret*.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/zsh,node,macos,intellij+all,solidity,soliditytruffle,vscode,sublimetext
 # Edit at https://www.toptal.com/developers/gitignore?templates=zsh,node,macos,intellij+all,solidity,soliditytruffle,vscode,sublimetext
