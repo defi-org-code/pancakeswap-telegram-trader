@@ -58,10 +58,13 @@ class API {
         this.mtproto.updates.on('updateShortChatMessage', listener);
         this.mtproto.updates.on('updateShortMessage', listener);
         this.mtproto.updates.on('updateShortSentMessage', listener);
-        // When listening to all updates the events are working better
-        // this.mtproto.updates.on('updatesCombined', listener);
-        // this.mtproto.updates.on('updateShortSentMessage', listener);
-        // this.mtproto.updates.on('updateShort', listener);
+    }
+
+    stopListenToUpdate() {
+        this.mtproto.updates.removeAllListeners('updates');
+        this.mtproto.updates.removeAllListeners('updateShortChatMessage');
+        this.mtproto.updates.removeAllListeners('updateShortMessage');
+        this.mtproto.updates.removeAllListeners('updateShortSentMessage');
     }
 }
 

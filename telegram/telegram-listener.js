@@ -18,7 +18,7 @@ rl.question[util.promisify.custom] = (arg) => {
 
 const question = util.promisify(rl.question);
 
-const api = new API(require('../secret').telegram_api_id, require('../secret').telegram_api_hash);
+const api = new API(require('../secret-personal').telegram_api_id, require('../secret-personal').telegram_api_hash);
 
 const signIn = async () => {
 
@@ -28,8 +28,8 @@ const signIn = async () => {
         console.log("phoneNumber", phoneNumber)
         const result = await api.call('auth.sendCode', {
             phone_number: phoneNumber,
-            api_id: require('../secret').telegram_api_id,
-            api_hash: require('../secret').telegram_api_hash,
+            api_id: require('../secret-personal').telegram_api_id,
+            api_hash: require('../secret-personal').telegram_api_hash,
             settings: {
                 _: 'codeSettings',
             }
@@ -140,7 +140,9 @@ module.exports = async (chatName, partOfMessageToFindUser, limitOfMessages, call
                         (message.peer_id._ === 'peerChat' && message.peer_id.chat_id === chat.id)) {
 
                         if (user === CHANNEL_USER_ID || (message.from_id._ === 'peerUser' && message.from_id.user_id === user.user_id)) {
-                            callback(message.message);
+                            if (callback(message.message)) {
+                                api.stopListenToUpdate();
+                            }
                         }
                     }
 
