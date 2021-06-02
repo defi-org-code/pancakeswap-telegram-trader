@@ -4,7 +4,7 @@ const Contract = require('web3-eth-contract');
 const BN = require('bn.js');
 Contract.setProvider(provider);
 const web3 = new Web3(provider);
-const secret = require('../secret-personal');
+const secret = require('../secret');
 
 //--- Change if needed
 const gas = 2000000;
