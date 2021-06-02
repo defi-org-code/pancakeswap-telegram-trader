@@ -5,6 +5,31 @@ const {sleep} = require('@mtproto/core/src/utils/common');
 const BN = require('bn.js');
 const Web3 = require("web3");
 
+const SellStrategyByTime = {
+    sell: async (amountToBuy, shitTokenAddress) => {
+        const timeToWaitBeforeSellingInSeconds = 10;
+
+        console.log(`Waiting ${timeToWaitBeforeSellingInSeconds} seconds`);
+        await sleep(timeToWaitBeforeSellingInSeconds * 1000);
+
+        console.log("Selling shittoken");
+        await pancakeSwapRouter.swapShitTokenToBNB(true, shitTokenAddress);
+    }
+};
+
+const SellStrategyByPrice = {
+    sell: async (amountToBuy, shitTokenAddress) => {
+        const sellAboveInBNB = "0.5";
+
+        await trackPriceAndDecideWhenToSell(
+            shitTokenAddress,
+            amountToBuy,
+            3000,
+            sellAboveInBNB
+        );
+    }
+};
+
 (async () => {
 
     const SellStrategy = SellStrategyByPrice;
@@ -41,31 +66,6 @@ const Web3 = require("web3");
     );
 
 })();
-
-const SellStrategyByTime = {
-    sell: async (amountToBuy, shitTokenAddress) => {
-        const timeToWaitBeforeSellingInSeconds = 10;
-
-        console.log(`Waiting ${timeToWaitBeforeSellingInSeconds} seconds`);
-        await sleep(timeToWaitBeforeSellingInSeconds * 1000);
-
-        console.log("Selling shittoken");
-        await pancakeSwapRouter.swapShitTokenToBNB(true, shitTokenAddress);
-    }
-};
-
-const SellStrategyByPrice = {
-    sell: async (amountToBuy, shitTokenAddress) => {
-        const sellAboveInBNB = "0.5";
-
-        await trackPriceAndDecideWhenToSell(
-            shitTokenAddress,
-            amountToBuy,
-            3000,
-            sellAboveInBNB
-        );
-    }
-};
 
 const trackPriceAndDecideWhenToSell = async (shitTokenAddress, amountToBuy, pollInterval, sellAboveInBNB) => {
 
