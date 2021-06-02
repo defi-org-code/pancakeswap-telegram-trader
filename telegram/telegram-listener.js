@@ -100,6 +100,19 @@ const findUserByMessage = async (messageToFind, chat, limit = 10) => {
     return null;
 };
 
+function readMessage(message, chat, user, callback) {
+
+    if ((message.peer_id._ === 'peerChannel' && message.peer_id.channel_id === chat.id) ||
+        (message.peer_id._ === 'peerChat' && message.peer_id.chat_id === chat.id)) {
+
+        if (user === CHANNEL_USER_ID || (message.from_id._ === 'peerUser' && message.from_id.user_id === user.user_id)) {
+            if (callback(message.message)) {
+                api.stopListenToUpdate();
+            }
+        }
+    }
+}
+
 /**
  * Telegram listener
  *
@@ -134,21 +147,15 @@ module.exports = async (chatName, partOfMessageToFindUser, limitOfMessages, call
 
                 if (update.message) {
 
-                    const message = update.message;
-
-                    if ((message.peer_id._ === 'peerChannel' && message.peer_id.channel_id === chat.id) ||
-                        (message.peer_id._ === 'peerChat' && message.peer_id.chat_id === chat.id)) {
-
-                        if (user === CHANNEL_USER_ID || (message.from_id._ === 'peerUser' && message.from_id.user_id === user.user_id)) {
-                            if (callback(message.message)) {
-                                api.stopListenToUpdate();
-                            }
-                        }
-                    }
+                    readMessage(update.message, chat, user, callback);
 
                 }
 
             }
+        } else if (updateInfo.message) { // updateInfo.message is the actual text message not the message object
+
+            readMessage(updateInfo, chat, user, callback);
+
         }
 
     })

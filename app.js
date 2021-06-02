@@ -36,12 +36,12 @@ const SellStrategyByPrice = {
     const amountToBuy = "0.1";
 
     await telegramListener(
-        'Pancakeswap Pumping ©', // The group/channel name
-        '6 HOURS REMAINING', // Part or all message of user to listen to
+        'Testing pump', // The group/channel name
+        'Hi', // Part or all message of user to listen to
         30, // Number of messages to fetch when searching user to listen to
         async (message) => { // The call back with the message of the user
 
-            const regex = /outputCurrency=(.*)\s/i;
+            const regex = /outputCurrency=(.*)\s?/i;
 
             if (regex.test(message)) {
 
