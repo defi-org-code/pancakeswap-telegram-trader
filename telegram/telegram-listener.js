@@ -56,9 +56,8 @@ const successfulLogin = () => {
 const startListening = async () => {
 
     try {
-        await api.call('updates.getState').then(result => {
-            console.log('updates.getState', result);
-        });
+        const result = await api.call('updates.getState');
+        console.log('updates.getState', result);
     } catch (e) {
         if (e.error_code === 401) {
             // User did not login
@@ -100,7 +99,7 @@ const findUserByMessage = async (messageToFind, chat, limit = 10) => {
     return null;
 };
 
-function readMessage(message, chat, user, callback) {
+async function readMessage(message, chat, user, callback) {
 
     let chatId;
     let fromId;
@@ -118,7 +117,7 @@ function readMessage(message, chat, user, callback) {
     }
 
     if (chatId === chat.id && (user === CHANNEL_USER_ID || fromId === user.user_id)) {
-        if (callback(message.message)) {
+        if (await callback(message.message)) {
             api.stopListenToUpdate();
         }
     }
@@ -158,14 +157,14 @@ module.exports = async (chatName, partOfMessageToFindUser, limitOfMessages, call
 
                 if (update.message) {
 
-                    readMessage(update.message, chat, user, callback);
+                    await readMessage(update.message, chat, user, callback);
 
                 }
 
             }
         } else if (updateInfo.message) { // updateInfo.message is the actual text message not the message object
 
-            readMessage(updateInfo, chat, user, callback);
+            await readMessage(updateInfo, chat, user, callback);
 
         }
 
