@@ -40,7 +40,7 @@ module.exports = {
 
         await approveShitToken(shitTokenAddress);
 
-        const amountOfShitToken = this.balanceOf(shitTokenAddress);
+        const amountOfShitToken = balanceOf(shitTokenAddress);
 
         console.log("blanace of", amountOfShitToken);
 
@@ -85,10 +85,7 @@ module.exports = {
         }, pollInterval);
 
     },
-    balanceOf: async (addressOfShitToken) => {
-        const shitTokenContract = new Contract(require('./shit-token-abi'), addressOfShitToken);
-        return await shitTokenContract.methods.balanceOf(secret.public_key).call();
-    },
+    balanceOf: balanceOf,
     decimals: async (addressOfShitToken) => {
         const shitTokenContract = new Contract(require('./shit-token-abi'), addressOfShitToken);
         return parseInt(await shitTokenContract.methods.decimals().call());
@@ -97,6 +94,11 @@ module.exports = {
         const result = await pancakeswapRouterContract.methods.getAmountsOut(amountOut, [addressOfShitToken, wBNB]).call();
         return result[1];
     }
+};
+
+const balanceOf = async (addressOfShitToken) => {
+    const shitTokenContract = new Contract(require('./shit-token-abi'), addressOfShitToken);
+    return await shitTokenContract.methods.balanceOf(secret.public_key).call();
 };
 
 const approveShitToken = async (shitTokenAddress) => {
