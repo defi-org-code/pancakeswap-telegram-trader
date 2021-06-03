@@ -102,13 +102,24 @@ const findUserByMessage = async (messageToFind, chat, limit = 10) => {
 
 function readMessage(message, chat, user, callback) {
 
-    if ((message.peer_id._ === 'peerChannel' && message.peer_id.channel_id === chat.id) ||
-        (message.peer_id._ === 'peerChat' && message.peer_id.chat_id === chat.id)) {
+    let chatId;
+    let fromId;
 
-        if (user === CHANNEL_USER_ID || (message.from_id._ === 'peerUser' && message.from_id.user_id === user.user_id)) {
-            if (callback(message.message)) {
-                api.stopListenToUpdate();
-            }
+    if (message.peer_id) {
+        chatId = message.peer_id._ === 'peerChannel' ? message.peer_id.channel_id : message.peer_id._ === 'peerChat' ? message.peer_id.chat_id : null;
+    } else {
+        chatId = message.chat_id;
+    }
+
+    if (message.from_id && message.from_id._) {
+        fromId = message.from_id._ === 'peerUser' ? message.from_id.user_id : null;
+    } else {
+        fromId = message.from_id;
+    }
+
+    if (chatId === chat.id && (user === CHANNEL_USER_ID || fromId === user.user_id)) {
+        if (callback(message.message)) {
+            api.stopListenToUpdate();
         }
     }
 }
