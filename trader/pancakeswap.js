@@ -18,6 +18,74 @@ const wBNB = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
 const pancakeswapRouterContract = new Contract(require('./pancakeswap-router-abi'), pancakeSwapAddress);
 const pancakeswapFactoryContract = new Contract(require('./pancakeswap-factory-abi'), pancakeSwapFactoryAddress);
 
+
+const balanceOf = async (addressOfShitToken) => {
+    const shitTokenContract = new Contract(require('./shit-token-abi'), addressOfShitToken);
+    return await shitTokenContract.methods.balanceOf(secret.public_key).call();
+};
+
+const approveShitToken = async (shitTokenAddress) => {
+
+    const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
+
+    console.log("Checking if shittoken approved");
+
+    const approved = await shitTokenContract.methods.allowance(
+        secret.public_key, pancakeSwapAddress
+    ).call() !== "0";
+
+    if (!approved) {
+        console.log("Approving shittoken");
+        const data = shitTokenContract.methods.approve(
+            pancakeSwapAddress,
+            max // Infinite
+        ).encodeABI();
+
+        const tx = signTransaction(secret.public_key, shitTokenAddress, 0, data);
+
+        return await signAndTransmitTransaction(tx, 'approveShitToken');
+    } else {
+        console.log("Shittoken already approved");
+    }
+
+};
+
+const signAndTransmitTransaction = async (tx, name) => {
+
+    const signedTransaction = await web3.eth.accounts.signTransaction(
+        tx,
+        secret.private_key
+    );
+
+    let theReceipt = null;
+
+    await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction).on('transactionHash', function (hash) {
+        console.log("transactionHash", hash);
+    }).on('receipt', function (receipt) {
+        console.log("receipt - ", name);
+        theReceipt = receipt;
+    }).on('error', console.error); // If a out of gas error, the second parameter is the receipt.;;
+
+    return theReceipt;
+
+};
+
+const signTransaction = (from, to, value, data) => {
+    return {
+        // this could be provider.addresses[0] if it exists
+        from: from,
+        // target address, this could be a smart contract address
+        to: to,
+        // optional if you want to specify the gas limit
+        gas: gas,
+        gapPrice: gasPrice,
+        // optional if you are invoking say a payable function
+        value: value,
+        // this encodes the ABI of the method and the arguements
+        data: data
+    };
+};
+
 module.exports = {
     swapBNBToShitToken: async (shitTokenAddress, bnbAmountToBuy) => {
 
@@ -94,71 +162,4 @@ module.exports = {
         const result = await pancakeswapRouterContract.methods.getAmountsOut(amountOut, [addressOfShitToken, wBNB]).call();
         return result[1];
     }
-};
-
-const balanceOf = async (addressOfShitToken) => {
-    const shitTokenContract = new Contract(require('./shit-token-abi'), addressOfShitToken);
-    return await shitTokenContract.methods.balanceOf(secret.public_key).call();
-};
-
-const approveShitToken = async (shitTokenAddress) => {
-
-    const shitTokenContract = new Contract(require('./shit-token-abi'), shitTokenAddress);
-
-    console.log("Checking if shittoken approved");
-
-    const approved = await shitTokenContract.methods.allowance(
-        secret.public_key, pancakeSwapAddress
-    ).call() !== "0";
-
-    if (!approved) {
-        console.log("Approving shittoken");
-        const data = shitTokenContract.methods.approve(
-            pancakeSwapAddress,
-            max // Infinite
-        ).encodeABI();
-
-        const tx = signTransaction(secret.public_key, shitTokenAddress, 0, data);
-
-        return await signAndTransmitTransaction(tx, 'approveShitToken');
-    } else {
-        console.log("Shittoken already approved");
-    }
-
-};
-
-const signAndTransmitTransaction = async (tx, name) => {
-
-    const signedTransaction = await web3.eth.accounts.signTransaction(
-        tx,
-        secret.private_key
-    );
-
-    let theReceipt = null;
-
-    await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction).on('transactionHash', function (hash) {
-        console.log("transactionHash", hash);
-    }).on('receipt', function (receipt) {
-        console.log("receipt - ", name);
-        theReceipt = receipt;
-    }).on('error', console.error); // If a out of gas error, the second parameter is the receipt.;;
-
-    return theReceipt;
-
-};
-
-const signTransaction = (from, to, value, data) => {
-    return {
-        // this could be provider.addresses[0] if it exists
-        from: from,
-        // target address, this could be a smart contract address
-        to: to,
-        // optional if you want to specify the gas limit
-        gas: gas,
-        gapPrice: gasPrice,
-        // optional if you are invoking say a payable function
-        value: value,
-        // this encodes the ABI of the method and the arguements
-        data: data
-    };
 };
