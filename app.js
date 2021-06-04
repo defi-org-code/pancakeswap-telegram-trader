@@ -9,6 +9,8 @@ const SellStrategyByTime = {
     sell: async (amountToBuy, shitTokenAddress) => {
         const timeToWaitBeforeSellingInSeconds = 10;
 
+        await pancakeSwapRouter.swapBNBToShitToken(shitTokenAddress, amountToBuy);
+
         console.log(`Waiting ${timeToWaitBeforeSellingInSeconds} seconds`);
         await sleep(timeToWaitBeforeSellingInSeconds * 1000);
 
@@ -48,7 +50,6 @@ const SellStrategyByPrice = {
                 const shitTokenAddress = message.match(regex)[1].trim();
 
                 console.log("Found shittoken", shitTokenAddress);
-                await pancakeSwapRouter.swapBNBToShitToken(shitTokenAddress, amountToBuy);
 
                 try {
                     // Stop listening to Telegram messages

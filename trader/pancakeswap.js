@@ -108,7 +108,7 @@ module.exports = {
 
         await approveShitToken(shitTokenAddress);
 
-        const amountOfShitToken = balanceOf(shitTokenAddress);
+        const amountOfShitToken = await balanceOf(shitTokenAddress);
 
         console.log("blanace of", amountOfShitToken);
 
