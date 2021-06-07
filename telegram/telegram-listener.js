@@ -144,7 +144,7 @@ module.exports = async (chatName, partOfMessageToFindUser, limitOfMessages, call
         throw 'Couldn\'t find Chat';
     }
 
-    const user = await findUserByMessage(partOfMessageToFindUser, chat, limitOfMessages);
+    const user = partOfMessageToFindUser === null ? CHANNEL_USER_ID : await findUserByMessage(partOfMessageToFindUser, chat, limitOfMessages);
 
     if (!user) {
         throw 'Couldn\'t find user';

@@ -39,7 +39,7 @@ const SellStrategyByPrice = {
 
     await telegramListener(
         'Testing pump', // The group/channel name
-        'Hi', // Part or all message of user to listen to
+        'Hi', // Part or all message of user to listen to, null means all users
         30, // Number of messages to fetch when searching user to listen to
         async (message) => { // The call back with the message of the user
 

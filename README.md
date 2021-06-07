@@ -28,7 +28,7 @@ Everything is done automatically, you just need to choose the parameters.
 
     await telegramListener(
         'Pancakeswap Pumping ©', // The group/channel name
-        '6 HOURS REMAINING', // Part or all message of user to listen to
+        '6 HOURS REMAINING', // Part or all message of user to listen to, null means all users
         30, // Number of messages to fetch when searching user to listen to
         async (message) => { // The call back with the message of the user
 
