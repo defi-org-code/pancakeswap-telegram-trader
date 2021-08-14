@@ -66,10 +66,6 @@ SellStrategyByTime
 SellStrategyByPrice
 > This strategy will sell the token when the profit from selling the token gets to a specific amount.
 
-# Contact me
-
-For requests and questions contract me via telegram https://t.me/RotemYakir
-
 # TODOS
 
 - Add TypeScript
